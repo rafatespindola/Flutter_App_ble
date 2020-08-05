@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
+import 'package:flutter_progress_dialog/flutter_progress_dialog.dart';
 
 void main() {
   runApp(MyApp());
@@ -13,22 +14,25 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(brightness: Brightness.light, primaryColor: Color.fromRGBO(58, 66, 86, 1)),
-      home: StreamBuilder<BluetoothState>(
-        stream: FlutterBlue.instance.state,
-        initialData: BluetoothState.unknown,
-        builder: (c, snapshot){
-          final state = snapshot.data;
-          if(state == BluetoothState.on){
-           return BluetoothOnScreen();
-          }else{
-            return BluetoothOffScreen(
-              state: state,
-            );
-          }
-        },
+    return ProgressDialog(
+      orientation: ProgressOrientation.vertical,
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(brightness: Brightness.light, primaryColor: Color.fromRGBO(58, 66, 86, 1)),
+        home: StreamBuilder<BluetoothState>(
+          stream: FlutterBlue.instance.state,
+          initialData: BluetoothState.unknown,
+          builder: (c, snapshot){
+            final state = snapshot.data;
+            if(state == BluetoothState.on){
+             return BluetoothOnScreen();
+            }else{
+              return BluetoothOffScreen(
+                state: state,
+              );
+            }
+          },
+        ),
       ),
     );
   }
@@ -59,12 +63,15 @@ class _BluetoothOnScreenState extends State<BluetoothOnScreen> {
   }
 
   _deviceSearchingStart(){
+    showProgressDialog(loadingText: 'Searching Device...');
+
     FlutterBlue.instance
         .startScan(timeout: Duration(seconds: 3))
         .whenComplete(() {
 
           FlutterBlue.instance.startScan();
           _scanResult();
+          dismissProgressDialog();
     });
   }
 
